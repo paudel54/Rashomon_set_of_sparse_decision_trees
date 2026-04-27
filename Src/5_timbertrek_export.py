@@ -63,6 +63,7 @@ def tree_to_dict(clf, feature_names, class_names=["pre-med", "post-med"]):
                 "threshold":  threshold,
                 "left":       recurse(left_child),   # ≤ threshold
                 "right":      recurse(right_child),  # > threshold
+                "n_train":    int(tree.n_node_samples[node]),
             }
         else:
             values = tree.value[node][0]
@@ -73,6 +74,7 @@ def tree_to_dict(clf, feature_names, class_names=["pre-med", "post-med"]):
                 "class":      pred,
                 "class_name": class_names[pred],
                 "samples":    int(total),
+                "n_train":    int(tree.n_node_samples[node]),
                 "dist":       [round(float(v)/total, 3) for v in values],
             }
 

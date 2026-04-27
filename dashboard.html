@@ -1025,7 +1025,8 @@ function renderTreeNode(node, prefix, isLast) {
   if (node.leaf) {
     const cls = node.class===0 ? "PRE-MED" : "POST-MED";
     const clsStyle = node.class===0 ? "tv-leaf0" : "tv-leaf1";
-    lines.push(`${prefix}${connector}<span class="${clsStyle}">🍃 ${cls} [${node.dist.join(", ")}]  (n=${node.samples})</span>`);
+    const nDisplay = node.n_train !== undefined ? node.n_train : node.samples;
+    lines.push(`${prefix}${connector}<span class="${clsStyle}">🍃 ${cls} [${node.dist.join(", ")}]  (n_train=${nDisplay})</span>`);
   } else {
     lines.push(`${prefix}${connector}<span class="tv-split">${node.feature}</span> <span class="tv-thresh">≤ ${node.threshold}</span>`);
     lines.push(...renderTreeNode(node.left,  prefix+childPfx, false));
