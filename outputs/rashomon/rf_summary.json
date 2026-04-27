@@ -1,0 +1,17 @@
+{
+  "reference_rf_accuracy": 1.0,
+  "epsilon": 0.05,
+  "rf_rashomon_threshold": 0.95,
+  "rf_rashomon_set_size": 1620,
+  "dt_rashomon_set_size": 4171,
+  "rf_accuracy_range": {
+    "min": 0.975,
+    "max": 1.0,
+    "mean": 0.9920833333333333
+  },
+  "dt_accuracy_range": {
+    "min": 0.945,
+    "max": 1.0,
+    "mean": 0.9800287700791178
+  }
+}

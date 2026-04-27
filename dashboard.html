@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rashomon Sets – Biosignal Demo | P19 S1</title>
+  <meta name="description" content="Interactive demo of Rashomon sets applied to physiological biosignal data for pre/post medication classification." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS Variables ─────────────────────────────────────────────── */
+    :root {
+      --bg:          #0D0F1A;
+      --surface:     #141627;
+      --surface2:    #1C1F35;
+      --border:      #2A2D4A;
+      --text:        #E2E3F0;
+      --muted:       #8B8FA8;
+      --accent:      #5B8DEF;
+      --accent2:     #F06449;
+      --accent3:     #A2D86B;
+      --accent4:     #9B89D4;
+      --gold:        #FFD700;
+      --teal:        #50C9CE;
+      --radius:      12px;
+      --radius-lg:   20px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── Animated background ──────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 20%, rgba(91,141,239,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 80%, rgba(240,100,73,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 50% 50%, rgba(155,137,212,0.04) 0%, transparent 70%);
+    }
+
+    /* ─── Header ───────────────────────────────────────────────────── */
+    header {
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(91,141,239,0.2), rgba(155,137,212,0.2));
+      border: 1px solid rgba(91,141,239,0.4);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #E2E3F0 0%, #5B8DEF 50%, #9B89D4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.8rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 640px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* ─── Nav tabs ─────────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 0 auto 2.5rem;
+      max-width: 900px;
+      padding: 0 1rem;
+    }
+
+    .tab-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.55rem 1.1rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent4));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(91,141,239,0.35);
+    }
+
+    /* ─── Main layout ───────────────────────────────────────────────── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .tab-section { display: none; }
+    .tab-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── Cards ─────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 1.5rem; }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+    .card-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    /* ─── Grid layouts ──────────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+    @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+    /* ─── Stat boxes ─────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--stat-color, var(--accent));
+    }
+    .stat-value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--stat-color, var(--accent));
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    /* ─── Images ─────────────────────────────────────────────────────── */
+    .fig-img {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    /* ─── Feature bars ───────────────────────────────────────────────── */
+    .feat-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+    .feat-bar-label {
+      width: 160px;
+      font-size: 0.82rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .feat-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .feat-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .feat-bar-val {
+      width: 56px;
+      text-align: right;
+      font-size: 0.78rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+
+    /* ─── Comparison table ──────────────────────────────────────────── */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .compare-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.7rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(42,45,74,0.5);
+      color: var(--text);
+    }
+    .compare-table tr:hover td { background: var(--surface2); }
+    .badge-dt {
+      background: rgba(91,141,239,0.2);
+      color: var(--accent);
+      border: 1px solid rgba(91,141,239,0.3);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .badge-rf {
+      background: rgba(240,100,73,0.2);
+      color: var(--accent2);
+      border: 1px solid rgba(240,100,73,0.3);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    /* ─── Tree explorer ─────────────────────────────────────────────── */
+    #tree-search { width: 100%; margin-bottom: 1rem; }
+    .tree-controls {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .tree-controls label { font-size: 0.8rem; color: var(--muted); }
+    .tree-controls select, .tree-controls input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #tree-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      max-height: 540px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    #tree-list::-webkit-scrollbar { width: 5px; }
+    #tree-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .tree-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .tree-card:hover, .tree-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(91,141,239,0.25);
+    }
+    .tree-card .tc-acc {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent3);
+    }
+    .tree-card .tc-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+    .tree-card .tc-feats {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .tc-chip {
+      background: rgba(91,141,239,0.15);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 0.12rem 0.4rem;
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Tree visualiser */
+    #tree-visual {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #C0C3D8;
+      white-space: pre;
+      overflow: auto;
+      min-height: 200px;
+      max-height: 500px;
+      line-height: 1.7;
+    }
+    .tv-split { color: #5B8DEF; }
+    .tv-leaf0  { color: #F06449; }
+    .tv-leaf1  { color: #A2D86B; }
+    .tv-thresh { color: #9B89D4; }
+
+    /* ─── TimberTrek section ─────────────────────────────────────────── */
+    .timbertrek-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, rgba(80,201,206,0.15), rgba(91,141,239,0.15));
+      border: 1px solid rgba(80,201,206,0.35);
+      color: var(--teal);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .timbertrek-badge:hover {
+      background: linear-gradient(135deg, rgba(80,201,206,0.25), rgba(91,141,239,0.25));
+      box-shadow: 0 0 16px rgba(80,201,206,0.25);
+    }
+
+    /* ─── Footer ────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ─── Animations ─────────────────────────────────────────────────── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--accent3);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="badge">🧠 Rashomon Sets · Biosignal Research · NeurIPS '22</div>
+  <h1>Exploring the Rashomon Set<br>of Sparse Decision Trees</h1>
+  <p class="subtitle">
+    Applied to physiological biosignals (ECG · EDA · SKT) for pre/post medication
+    classification using 8 sparse interpretable features.
+    Participant <strong>P19 S1</strong> · N=1,000 windows.
+  </p>
+</header>
+
+<!-- ─── Nav ─────────────────────────────────────────────────────────────── -->
+<nav id="nav">
+  <button class="tab-btn active" data-tab="overview"   id="btn-overview"  >📊 Overview</button>
+  <button class="tab-btn"        data-tab="data"       id="btn-data"      >🔬 Data & Features</button>
+  <button class="tab-btn"        data-tab="rashomon"   id="btn-rashomon"  >🌳 Rashomon Set</button>
+  <button class="tab-btn"        data-tab="rid"        id="btn-rid"       >📈 Feature Importance</button>
+  <button class="tab-btn"        data-tab="comparison" id="btn-comparison">⚖️ DT vs RF</button>
+  <button class="tab-btn"        data-tab="explorer"   id="btn-explorer"  >🔍 Tree Explorer</button>
+  <button class="tab-btn"        data-tab="timbertrek" id="btn-timbertrek">🪵 TimberTrek</button>
+</nav>
+
+<main>
+
+  <!-- ═══════════════════════ OVERVIEW ═══════════════════════════════════ -->
+  <section class="tab-section active" id="tab-overview">
+    <div class="stat-grid" id="stats-grid">
+      <div class="stat" style="--stat-color:#5B8DEF">
+        <div class="stat-value" id="st-samples">1,000</div>
+        <div class="stat-label">Total Windows</div>
+      </div>
+      <div class="stat" style="--stat-color:#A2D86B">
+        <div class="stat-value" id="st-features">8</div>
+        <div class="stat-label">Sparse Features</div>
+      </div>
+      <div class="stat" style="--stat-color:#FFD700">
+        <div class="stat-value" id="st-rs-size">…</div>
+        <div class="stat-label">Rashomon Set (DT)</div>
+      </div>
+      <div class="stat" style="--stat-color:#F06449">
+        <div class="stat-value" id="st-rs-rf">…</div>
+        <div class="stat-label">Rashomon Set (RF)</div>
+      </div>
+      <div class="stat" style="--stat-color:#9B89D4">
+        <div class="stat-value" id="st-ref-acc">…</div>
+        <div class="stat-label">Ref. Accuracy (DT)</div>
+      </div>
+      <div class="stat" style="--stat-color:#50C9CE">
+        <div class="stat-value" id="st-epsilon">5%</div>
+        <div class="stat-label">Rashomon ε</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">What is the Rashomon Set?</div>
+        <div class="card-sub">Core concept from the paper</div>
+        <p style="color:var(--muted);line-height:1.8;font-size:0.9rem;">
+          The <strong style="color:var(--text)">Rashomon set</strong> is the collection of all models that perform
+          nearly as well as the best model (within ε = 5%). Instead of selecting
+          a single "optimal" tree, we explore the <em>entire space</em> of near-optimal
+          sparse decision trees. This reveals:
+        </p>
+        <ul style="margin-top:1rem;color:var(--muted);font-size:0.88rem;line-height:2;padding-left:1.2rem;">
+          <li>Which features are <strong style="color:var(--accent3)">universally important</strong></li>
+          <li>Which features are <strong style="color:var(--accent2)">conditionally important</strong></li>
+          <li>How many equally-good models exist</li>
+          <li>The tradeoff between accuracy and interpretability</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Pipeline Architecture</div>
+        <div class="card-sub">5-step analysis workflow</div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:1.2rem">🔬</span>
+            <div><div style="font-size:0.85rem;font-weight:600">Data Exploration</div><div style="font-size:0.75rem;color:var(--muted)">8 sparse features, distribution analysis</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:1.2rem">🌳</span>
+            <div><div style="font-size:0.85rem;font-weight:600">Rashomon Enumeration</div><div style="font-size:0.75rem;color:var(--muted)">4,500 DT configs × parameter grid</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:1.2rem">📈</span>
+            <div><div style="font-size:0.85rem;font-weight:600">RID Analysis</div><div style="font-size:0.75rem;color:var(--muted)">Feature importance distributions across the set</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:1.2rem">⚖️</span>
+            <div><div style="font-size:0.85rem;font-weight:600">DT vs RF Comparison</div><div style="font-size:0.75rem;color:var(--muted)">Rashomon set size, structure, stability</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <span style="font-size:1.2rem">🪵</span>
+            <div><div style="font-size:0.85rem;font-weight:600">TimberTrek Export</div><div style="font-size:0.75rem;color:var(--muted)">JSON trie for interactive visualisation</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title">Key Finding: Feature Dominance</div>
+      <div class="card-sub">Across all Rashomon trees – <span class="live-dot"></span>mean_tonic_eda is the dominant signal</div>
+      <div id="overview-feat-bars"></div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ DATA & FEATURES ═══════════════════════════ -->
+  <section class="tab-section" id="tab-data">
+    <div class="card">
+      <div class="card-title">Sparse Feature Set</div>
+      <div class="card-sub">8 selected features spanning ECG, EDA and SKT modalities</div>
+      <div class="grid-3" style="margin-bottom:1.5rem;">
+        <div style="background:rgba(91,141,239,0.1);border:1px solid rgba(91,141,239,0.25);border-radius:10px;padding:1rem;">
+          <div style="color:var(--accent);font-weight:700;margin-bottom:0.5rem;">🫀 ECG</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:2;">
+            <code style="color:var(--text)">median</code> — ECG amplitude<br>
+            <code style="color:var(--text)">median_hr</code> — Heart rate<br>
+            <code style="color:var(--text)">rmssd</code> — HRV measure
+          </div>
+        </div>
+        <div style="background:rgba(240,100,73,0.1);border:1px solid rgba(240,100,73,0.25);border-radius:10px;padding:1rem;">
+          <div style="color:var(--accent2);font-weight:700;margin-bottom:0.5rem;">⚡ EDA</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:2;">
+            <code style="color:var(--text)">mean_tonic_eda</code> — Baseline SCL<br>
+            <code style="color:var(--text)">mean_phasic_eda</code> — SCR response<br>
+            <code style="color:var(--text)">std_eda</code> — EDA variability
+          </div>
+        </div>
+        <div style="background:rgba(80,201,206,0.1);border:1px solid rgba(80,201,206,0.25);border-radius:10px;padding:1rem;">
+          <div style="color:var(--teal);font-weight:700;margin-bottom:0.5rem;">🌡️ SKT</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:2;">
+            <code style="color:var(--text)">mean_temperature</code> — Skin temp<br>
+            <code style="color:var(--text)">min_temperature</code> — Min temp
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature Distributions</div>
+      <div class="card-sub">KDE plots – Pre-medication (blue) vs Post-medication (orange)</div>
+      <img src="outputs/figures/feature_distributions.png" class="fig-img" alt="Feature distributions" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature Correlation Matrix</div>
+      <div class="card-sub">Pearson correlations across the 8 sparse features</div>
+      <img src="outputs/figures/feature_correlation.png" class="fig-img" alt="Feature correlation" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature Box Plots by Modality</div>
+      <div class="card-sub">Normalised feature spread for pre vs post medication</div>
+      <img src="outputs/figures/feature_boxplots.png" class="fig-img" alt="Feature boxplots" />
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ RASHOMON SET ══════════════════════════════ -->
+  <section class="tab-section" id="tab-rashomon">
+    <div class="stat-grid">
+      <div class="stat" style="--stat-color:#FFD700">
+        <div class="stat-value" id="rs-size2">…</div>
+        <div class="stat-label">Trees in Rashomon Set</div>
+      </div>
+      <div class="stat" style="--stat-color:#A2D86B">
+        <div class="stat-value" id="rs-acc-max">…</div>
+        <div class="stat-label">Set Max Accuracy</div>
+      </div>
+      <div class="stat" style="--stat-color:#5B8DEF">
+        <div class="stat-value" id="rs-acc-mean">…</div>
+        <div class="stat-label">Set Mean Accuracy</div>
+      </div>
+      <div class="stat" style="--stat-color:#F06449">
+        <div class="stat-value" id="rs-acc-min">…</div>
+        <div class="stat-label">Set Min Accuracy</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Depth & Leaves Distribution</div>
+      <div class="card-sub">Structural characterisation of the Decision Tree Rashomon set</div>
+      <img src="outputs/figures/comparison_dt_structure.png" class="fig-img" alt="DT structure" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Rashomon Set – Feature Frequency</div>
+      <div class="card-sub">% of Rashomon trees that use each feature in at least one split</div>
+      <div id="rs-feat-bars"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Accuracy Distribution</div>
+      <div class="card-sub">All models within ε=5% of the reference optimal tree</div>
+      <img src="outputs/figures/comparison_accuracy_dist.png" class="fig-img" alt="Accuracy distribution" />
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ FEATURE IMPORTANCE ════════════════════════ -->
+  <section class="tab-section" id="tab-rid">
+    <div class="card">
+      <div class="card-title">Rashomon Importance Distribution (RID)</div>
+      <div class="card-sub">Violin plots of feature importance across all 4,171 near-optimal trees</div>
+      <img src="outputs/figures/rid_violin.png" class="fig-img" alt="RID violin" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Stability vs Mean Importance</div>
+      <div class="card-sub">CV (instability) vs mean importance. Colour = marginal accuracy impact.</div>
+      <img src="outputs/figures/rid_stability_scatter.png" class="fig-img" alt="Stability scatter" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature Inclusion Frequency</div>
+      <div class="card-sub">% of Rashomon trees that actively use each feature</div>
+      <img src="outputs/figures/rid_feature_frequency.png" class="fig-img" alt="Feature frequency" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Marginal Accuracy Drop (Leave-One-Feature-Out)</div>
+      <div class="card-sub">How much accuracy is lost when each feature is permuted across 200 sampled trees</div>
+      <div id="marginal-bars"></div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ DT VS RF COMPARISON ════════════════════════ -->
+  <section class="tab-section" id="tab-comparison">
+    <div class="card">
+      <div class="card-title">Summary Metrics</div>
+      <div class="card-sub">Key differences between Decision Tree and Random Forest Rashomon sets</div>
+      <div style="overflow-x:auto;">
+        <table class="compare-table" id="comparison-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th><span class="badge-dt">Decision Tree</span></th>
+              <th><span class="badge-rf">Random Forest</span></th>
+              <th>Winner</th>
+            </tr>
+          </thead>
+          <tbody id="comp-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted)">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Accuracy Distribution: DT vs RF Rashomon Sets</div>
+      <div class="card-sub">Each bar represents one model in the corresponding Rashomon set</div>
+      <img src="outputs/figures/comparison_accuracy_dist.png" class="fig-img" alt="Accuracy comparison" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Feature Importance: DT vs RF</div>
+      <div class="card-sub">Mean ± std feature importance across each Rashomon set</div>
+      <img src="outputs/figures/comparison_feature_importance.png" class="fig-img" alt="FI comparison" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Summary Bar Chart</div>
+      <div class="card-sub">Set size (log), accuracy, range and F1 comparison</div>
+      <img src="outputs/figures/comparison_summary_metrics.png" class="fig-img" alt="Summary metrics" />
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ TREE EXPLORER ═════════════════════════════ -->
+  <section class="tab-section" id="tab-explorer">
+    <div class="card">
+      <div class="card-title">Interactive Tree Explorer</div>
+      <div class="card-sub">Browse and inspect individual trees from the Rashomon set (top 200 by accuracy)</div>
+
+      <div class="tree-controls">
+        <label>Sort by
+          <select id="sort-select">
+            <option value="accuracy-desc">Accuracy ↓</option>
+            <option value="depth-asc">Depth ↑</option>
+            <option value="leaves-asc">Leaves ↑</option>
+            <option value="f1-desc">F1 ↓</option>
+          </select>
+        </label>
+        <label>Filter depth
+          <select id="depth-filter">
+            <option value="">All</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <label>Min accuracy
+          <input type="range" id="acc-filter" min="0.94" max="1.0" step="0.005" value="0.94" style="width:120px;" />
+          <span id="acc-filter-val" style="font-family:monospace;color:var(--accent)">0.94</span>
+        </label>
+      </div>
+
+      <div class="grid-2" style="gap:1.5rem;">
+        <div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">
+            <span id="tree-count">…</span> trees shown
+          </div>
+          <div id="tree-list">
+            <div style="color:var(--muted);font-size:0.85rem;padding:2rem;text-align:center;">
+              Loading trees…
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">Selected tree structure</div>
+          <div id="tree-visual">Click a tree on the left to view its structure…</div>
+          <div id="tree-detail" style="margin-top:0.8rem;font-size:0.8rem;color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════ TIMBERTREK ════════════════════════════════ -->
+  <section class="tab-section" id="tab-timbertrek">
+    <div class="card">
+      <div class="card-title">TimberTrek Integration</div>
+      <div class="card-sub">Visualise the Rashomon set interactively using the TimberTrek tool</div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        <a href="https://poloclub.github.io/timbertrek/" target="_blank" class="timbertrek-badge">
+          🪵 Open TimberTrek app
+        </a>
+        <a href="outputs/timbertrek/dashboard_trees.json" download class="timbertrek-badge" style="--teal:#A2D86B;border-color:rgba(162,216,107,0.35);">
+          ⬇️ Download Trees JSON
+        </a>
+        <a href="outputs/timbertrek/rashomon_trie.json" download class="timbertrek-badge" style="--teal:#9B89D4;border-color:rgba(155,137,212,0.35);">
+          ⬇️ Download Trie JSON
+        </a>
+      </div>
+
+      <div class="grid-2">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
+          <div style="font-weight:600;margin-bottom:0.8rem;">📁 Exported Files</div>
+          <div style="font-size:0.82rem;color:var(--muted);line-height:2.2;">
+            <div>📄 <code style="color:var(--text)">outputs/timbertrek/dashboard_trees.json</code>
+              <div style="padding-left:1.2rem;font-size:0.75rem;">Top 200 Rashomon trees with rules, accuracy, FI</div>
+            </div>
+            <div>📄 <code style="color:var(--text)">outputs/timbertrek/rashomon_trie.json</code>
+              <div style="padding-left:1.2rem;font-size:0.75rem;">Merged trie of all split paths (TimberTrek format)</div>
+            </div>
+            <div>📄 <code style="color:var(--text)">outputs/rashomon/rashomon_metadata.csv</code>
+              <div style="padding-left:1.2rem;font-size:0.75rem;">All 4,171 trees – accuracy, depth, leaves, FI</div>
+            </div>
+            <div>📄 <code style="color:var(--text)">outputs/rashomon/rid_results.json</code>
+              <div style="padding-left:1.2rem;font-size:0.75rem;">RID per feature – mean, std, CV, marginal drop</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
+          <div style="font-weight:600;margin-bottom:0.8rem;">🪵 How to Use TimberTrek</div>
+          <ol style="font-size:0.82rem;color:var(--muted);line-height:2.2;padding-left:1.2rem;">
+            <li>Visit <a href="https://poloclub.github.io/timbertrek/" target="_blank" style="color:var(--teal)">poloclub.github.io/timbertrek</a></li>
+            <li>Upload <code style="color:var(--text)">rashomon_trie.json</code></li>
+            <li>Explore the tree space visually</li>
+            <li>Filter by depth, accuracy, features used</li>
+            <li>Select preferred models interactively</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1.5rem;border-color:rgba(80,201,206,0.25);">
+        <div class="card-title">Trie Preview (Top-level splits)</div>
+        <div class="card-sub">Top 10 most common first splits across the Rashomon set</div>
+        <div id="trie-preview" style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:2;"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Rashomon Sets of Sparse Decision Trees · Biosignal Pre/Post Medication Classification ·
+  Based on <a href="https://arxiv.org/abs/2209.08040" target="_blank">TreeFARMS (NeurIPS '22)</a> and
+  <a href="https://github.com/jdonnelly36/Rashomon_Importance_Distribution" target="_blank">RID</a> ·
+  Participant P19 S1
+</footer>
+
+<script>
+// ─── Data loading ─────────────────────────────────────────────────────────────
+let rashomonData  = null;  // from rashomon_summary.json
+let rfData        = null;  // from rf_summary.json
+let ridData       = null;  // from rid_results.json
+let treesData     = null;  // from dashboard_trees.json
+let trieData      = null;  // from rashomon_trie.json
+let allTrees      = [];
+let filteredTrees = [];
+let selectedTreeIdx = -1;
+
+const FEATURE_COLORS = [
+  "#5B8DEF","#F06449","#A2D86B","#9B89D4","#FFD700","#50C9CE","#FF6B9D","#F7C59F"
+];
+const FEATURES = [
+  "median","median_hr","rmssd",
+  "mean_tonic_eda","mean_phasic_eda","std_eda",
+  "mean_temperature","min_temperature"
+];
+
+async function loadJSON(path) {
+  try {
+    const r = await fetch(path);
+    return await r.json();
+  } catch(e) {
+    console.warn("Could not load", path, e);
+    return null;
+  }
+}
+
+async function init() {
+  [rashomonData, rfData, ridData, treesData, trieData] = await Promise.all([
+    loadJSON("outputs/rashomon/rashomon_summary.json"),
+    loadJSON("outputs/rashomon/rf_summary.json"),
+    loadJSON("outputs/rashomon/rid_results.json"),
+    loadJSON("outputs/timbertrek/dashboard_trees.json"),
+    loadJSON("outputs/timbertrek/rashomon_trie.json"),
+  ]);
+
+  populateOverview();
+  populateRashomon();
+  populateComparison();
+  populateRID();
+  populateExplorer();
+  populateTimberTrek();
+}
+
+// ─── Overview ────────────────────────────────────────────────────────────────
+function populateOverview() {
+  if (rashomonData) {
+    document.getElementById("st-rs-size").textContent =
+      rashomonData.rashomon_set_size.toLocaleString();
+    document.getElementById("st-ref-acc").textContent =
+      (rashomonData.reference_accuracy * 100).toFixed(1) + "%";
+    document.getElementById("rs-size2").textContent =
+      rashomonData.rashomon_set_size.toLocaleString();
+    document.getElementById("rs-acc-max").textContent =
+      (rashomonData.accuracy_range.max * 100).toFixed(1) + "%";
+    document.getElementById("rs-acc-mean").textContent =
+      (rashomonData.accuracy_range.mean * 100).toFixed(1) + "%";
+    document.getElementById("rs-acc-min").textContent =
+      (rashomonData.accuracy_range.min * 100).toFixed(1) + "%";
+  }
+  if (rfData) {
+    document.getElementById("st-rs-rf").textContent =
+      rfData.rf_rashomon_set_size.toLocaleString();
+  }
+
+  // Overview feature bars (frequency)
+  if (rashomonData && rashomonData.feature_frequency_pct) {
+    const container = document.getElementById("overview-feat-bars");
+    const freq = rashomonData.feature_frequency_pct;
+    const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+    container.innerHTML = sorted.map(([feat, pct], i) => `
+      <div class="feat-bar-row">
+        <div class="feat-bar-label">${feat}</div>
+        <div class="feat-bar-track">
+          <div class="feat-bar-fill" style="width:${pct}%;background:${FEATURE_COLORS[i%FEATURE_COLORS.length]}"></div>
+        </div>
+        <div class="feat-bar-val">${pct.toFixed(1)}%</div>
+      </div>
+    `).join("");
+  }
+}
+
+// ─── Rashomon tab ─────────────────────────────────────────────────────────────
+function populateRashomon() {
+  if (!rashomonData) return;
+  const freq = rashomonData.feature_frequency_pct;
+  if (!freq) return;
+  const container = document.getElementById("rs-feat-bars");
+  const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+  container.innerHTML = sorted.map(([feat, pct], i) => `
+    <div class="feat-bar-row">
+      <div class="feat-bar-label">${feat}</div>
+      <div class="feat-bar-track">
+        <div class="feat-bar-fill" style="width:${pct}%;background:${FEATURE_COLORS[i%FEATURE_COLORS.length]}"></div>
+      </div>
+      <div class="feat-bar-val">${pct.toFixed(1)}%</div>
+    </div>
+  `).join("");
+}
+
+// ─── Comparison ───────────────────────────────────────────────────────────────
+function populateComparison() {
+  if (!rashomonData || !rfData) return;
+  const dt = rashomonData;
+  const rf = rfData;
+  const rows = [
+    ["Rashomon Set Size", dt.rashomon_set_size.toLocaleString(), rf.rf_rashomon_set_size.toLocaleString(),
+     dt.rashomon_set_size > rf.rf_rashomon_set_size ? "DT (larger = more explored)" : "RF"],
+    ["Reference Accuracy", (dt.reference_accuracy*100).toFixed(2)+"%", (rf.reference_rf_accuracy*100).toFixed(2)+"%",
+     dt.reference_accuracy >= rf.reference_rf_accuracy ? "DT" : "RF"],
+    ["Set Max Accuracy", (dt.accuracy_range.max*100).toFixed(2)+"%", (rf.rf_accuracy_range.max*100).toFixed(2)+"%",
+     dt.accuracy_range.max >= rf.rf_accuracy_range.max ? "DT" : "RF"],
+    ["Set Mean Accuracy", (dt.accuracy_range.mean*100).toFixed(2)+"%", (rf.rf_accuracy_range.mean*100).toFixed(2)+"%",
+     dt.accuracy_range.mean >= rf.rf_accuracy_range.mean ? "DT" : "RF"],
+    ["Accuracy Range", ((dt.accuracy_range.max-dt.accuracy_range.min)*100).toFixed(2)+"%",
+     ((rf.rf_accuracy_range.max-rf.rf_accuracy_range.min)*100).toFixed(2)+"%", "—"],
+    ["Interpretability", "✅ Single tree", "⚠️ Ensemble", "DT"],
+  ];
+  document.getElementById("comp-tbody").innerHTML = rows.map(([metric, dtVal, rfVal, winner]) => `
+    <tr>
+      <td style="font-weight:500">${metric}</td>
+      <td><span class="badge-dt">${dtVal}</span></td>
+      <td><span class="badge-rf">${rfVal}</span></td>
+      <td style="color:${winner==='DT'?'#5B8DEF':winner==='RF'?'#F06449':'#8B8FA8'}">${winner}</td>
+    </tr>
+  `).join("");
+}
+
+// ─── RID ──────────────────────────────────────────────────────────────────────
+function populateRID() {
+  if (!ridData) return;
+  const container = document.getElementById("marginal-bars");
+  const sorted = Object.entries(ridData).sort((a,b) => b[1].marginal_drop - a[1].marginal_drop);
+  const maxDrop = sorted[0][1].marginal_drop;
+  container.innerHTML = sorted.map(([feat, info], i) => {
+    const pct = maxDrop > 0 ? (info.marginal_drop / maxDrop * 100) : 0;
+    const sign = info.marginal_drop >= 0 ? "+" : "";
+    return `
+      <div class="feat-bar-row">
+        <div class="feat-bar-label">${feat}</div>
+        <div class="feat-bar-track">
+          <div class="feat-bar-fill" style="width:${pct}%;background:${FEATURE_COLORS[i%FEATURE_COLORS.length]}"></div>
+        </div>
+        <div class="feat-bar-val">${sign}${(info.marginal_drop*100).toFixed(2)}%</div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ─── Tree Explorer ────────────────────────────────────────────────────────────
+function populateExplorer() {
+  if (!treesData) return;
+  allTrees = treesData.trees;
+  renderTreeList();
+}
+
+function renderTreeList() {
+  const sortVal   = document.getElementById("sort-select").value;
+  const depthFilt = document.getElementById("depth-filter").value;
+  const accMin    = parseFloat(document.getElementById("acc-filter").value);
+
+  let trees = allTrees.filter(t => {
+    if (t.accuracy < accMin) return false;
+    if (depthFilt && t.depth != depthFilt) return false;
+    return true;
+  });
+
+  const [sortKey, sortDir] = sortVal.split("-");
+  trees.sort((a,b) => {
+    let va = sortKey==="accuracy" ? a.accuracy : sortKey==="depth" ? a.depth : sortKey==="leaves" ? a.n_leaves : a.f1;
+    let vb = sortKey==="accuracy" ? b.accuracy : sortKey==="depth" ? b.depth : sortKey==="leaves" ? b.n_leaves : b.f1;
+    return sortDir==="desc" ? vb-va : va-vb;
+  });
+  filteredTrees = trees;
+  document.getElementById("tree-count").textContent = trees.length;
+
+  const container = document.getElementById("tree-list");
+  if (trees.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:2rem;text-align:center;">No trees match filters</div>';
+    return;
+  }
+  container.innerHTML = trees.map((t, i) => `
+    <div class="tree-card ${i===selectedTreeIdx?'selected':''}" onclick="selectTree(${i})">
+      <div class="tc-acc">${(t.accuracy*100).toFixed(2)}%</div>
+      <div class="tc-meta">Depth ${t.depth} · ${t.n_leaves} leaves · F1 ${t.f1.toFixed(3)} · AUC ${t.auc.toFixed(3)}</div>
+      <div class="tc-feats">
+        ${t.features_used.map(f=>`<span class="tc-chip">${f}</span>`).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+function selectTree(idx) {
+  selectedTreeIdx = idx;
+  const t = filteredTrees[idx];
+  // Refresh cards
+  document.querySelectorAll(".tree-card").forEach((el, i) => {
+    el.classList.toggle("selected", i===idx);
+  });
+  // Render tree
+  const lines = renderTreeNode(t.tree, "", true);
+  document.getElementById("tree-visual").innerHTML = lines.join("\n");
+  document.getElementById("tree-detail").innerHTML = `
+    <strong>Accuracy:</strong> ${(t.accuracy*100).toFixed(3)}% &nbsp;|&nbsp;
+    <strong>F1:</strong> ${t.f1.toFixed(4)} &nbsp;|&nbsp;
+    <strong>AUC:</strong> ${t.auc.toFixed(4)} &nbsp;|&nbsp;
+    <strong>Depth:</strong> ${t.depth} &nbsp;|&nbsp;
+    <strong>Leaves:</strong> ${t.n_leaves}<br/>
+    <strong>Features used:</strong> ${t.features_used.join(", ")}
+  `;
+}
+
+function renderTreeNode(node, prefix, isLast) {
+  const connector = isLast ? "└── " : "├── ";
+  const childPfx  = isLast ? "    " : "│   ";
+  const lines = [];
+  if (node.leaf) {
+    const cls = node.class===0 ? "PRE-MED" : "POST-MED";
+    const clsStyle = node.class===0 ? "tv-leaf0" : "tv-leaf1";
+    lines.push(`${prefix}${connector}<span class="${clsStyle}">🍃 ${cls} [${node.dist.join(", ")}]  (n=${node.samples})</span>`);
+  } else {
+    lines.push(`${prefix}${connector}<span class="tv-split">${node.feature}</span> <span class="tv-thresh">≤ ${node.threshold}</span>`);
+    lines.push(...renderTreeNode(node.left,  prefix+childPfx, false));
+    lines.push(...renderTreeNode(node.right, prefix+childPfx, true));
+  }
+  return lines;
+}
+
+// ─── TimberTrek ───────────────────────────────────────────────────────────────
+function populateTimberTrek() {
+  if (!trieData) return;
+  const container = document.getElementById("trie-preview");
+  const keys = Object.keys(trieData).slice(0, 10);
+  container.innerHTML = keys.map((key, i) => {
+    const node = trieData[key];
+    const total = (node._counts||[0,0]).reduce((a,b)=>a+b,0);
+    const avgAcc = node._accs && node._accs.length ?
+      (node._accs.reduce((a,b)=>a+b,0)/node._accs.length*100).toFixed(2) : "—";
+    const children = Object.keys(node._children||{}).length;
+    return `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--accent)">${key}</span>
+      <span style="color:var(--muted);font-size:0.75rem">
+        ${total} trees · avg acc ${avgAcc}% · ${children} child splits
+      </span>
+    </div>`;
+  }).join("");
+}
+
+// ─── Tab nav ──────────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-section").forEach(s => s.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+document.getElementById("sort-select").addEventListener("change", renderTreeList);
+document.getElementById("depth-filter").addEventListener("change", renderTreeList);
+document.getElementById("acc-filter").addEventListener("input", function() {
+  document.getElementById("acc-filter-val").textContent = parseFloat(this.value).toFixed(3);
+  renderTreeList();
+});
+
+// ─── Start ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

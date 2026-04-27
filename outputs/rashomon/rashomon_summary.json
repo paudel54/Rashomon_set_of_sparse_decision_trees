@@ -1,0 +1,40 @@
+{
+  "reference_accuracy": 0.995,
+  "epsilon": 0.05,
+  "rashomon_threshold": 0.945,
+  "rashomon_set_size": 4171,
+  "total_models_tried": 4500,
+  "accuracy_range": {
+    "min": 0.945,
+    "max": 1.0,
+    "mean": 0.9800287700791178
+  },
+  "depth_distribution": {
+    "2": 2870,
+    "3": 878,
+    "4": 423
+  },
+  "n_leaves_distribution": {
+    "3": 2464,
+    "4": 591,
+    "5": 336,
+    "6": 304,
+    "7": 232,
+    "8": 103,
+    "9": 78,
+    "10": 38,
+    "11": 20,
+    "12": 4,
+    "14": 1
+  },
+  "feature_frequency_pct": {
+    "median": 30.59,
+    "median_hr": 12.01,
+    "rmssd": 9.85,
+    "mean_tonic_eda": 90.67,
+    "mean_phasic_eda": 19.01,
+    "std_eda": 25.13,
+    "mean_temperature": 41.84,
+    "min_temperature": 44.5
+  }
+}
