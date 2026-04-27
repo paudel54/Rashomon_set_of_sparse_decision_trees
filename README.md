@@ -58,10 +58,10 @@ Then, open your web browser and navigate to: **[http://localhost:8765/dashboard.
 │   ├── 4_rf_vs_dt_comparison.py    # Builds & compares RF Ensembles vs. DTs
 │   └── 5_timbertrek_export.py      # Serializes tree parameters & creates visual JSON trie
 ├── outputs/              # Auto-generated directory
-│   ├── figures/          # 9 publication-ready PNG charts
+│   ├── figures/          # PNG charts and diagram
 │   ├── rashomon/         # CSV Metadata, JSON summaries, and Model Pickle
 │   └── timbertrek/       # Export files for the JavaScript visualizers
-├── run_all.py            # Master orchestration script
+├── run_all.py            # Entry point for pipeline
 └── dashboard.html        # 7-Tab Interactive Presentation Frontend
 ```
 

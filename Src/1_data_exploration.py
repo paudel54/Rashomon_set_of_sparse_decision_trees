@@ -1,12 +1,11 @@
 """
-Script 1: Data Exploration & Feature Distribution
+Data Exploration & Feature Distribution
 ==================================================
 Loads the biosignal dataset, filters valid windows, selects the 8 sparse
 features and visualises their distributions (pre-med vs post-med).
 
 Outputs saved to: outputs/figures/
 """
-
 import os
 import pandas as pd
 import numpy as np
@@ -78,7 +77,7 @@ stats = df_feat.groupby("medication")[SPARSE_FEATURES].agg(["mean","std"]).round
 stats.to_csv(OUT_DIR / "feature_stats.csv")
 print(f"✓ Saved feature_stats.csv")
 
-# ── Plot 1: Feature distributions per class (KDE + rug) ──────────────────────
+# ── Plot 1: Feature distributions per class (Kernel density estimate plot) (KDE + rug) ──────────────────────
 fig, axes = plt.subplots(2, 4, figsize=(18, 8))
 fig.patch.set_facecolor("#0F1117")
 fig.suptitle("Feature Distributions: Pre vs Post Medication\n(Sparse Feature Set – P19 S1)",
@@ -170,4 +169,4 @@ plt.savefig(OUT_DIR / "feature_boxplots.png", dpi=150,
 plt.close()
 print("✓ Saved feature_boxplots.png")
 
-print("\n✅  Data exploration complete. All figures saved to outputs/figures/")
+print("\n  Data exploration complete. All figures saved to outputs/figures/")

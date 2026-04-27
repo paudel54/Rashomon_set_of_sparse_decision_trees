@@ -137,4 +137,4 @@ with open(OUT_DIR / "rashomon_trie.json", "w") as fp:
     json.dump(trie, fp)
 print("✓ Saved rashomon_trie.json (merged trie)")
 
-print("\n✅  TimberTrek export complete.")
+print("\n  TimberTrek export complete.")

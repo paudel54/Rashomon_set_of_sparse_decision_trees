@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-run_all.py – Master runner
+run_all.py – Initiates the pipeline
 Executes all 5 pipeline scripts in sequence.
 """
 import subprocess, sys, time, os
@@ -10,11 +9,11 @@ ROOT = Path(__file__).resolve().parent
 SRC  = ROOT / "Src"
 
 SCRIPTS = [
-    ("1️⃣  Data Exploration",             "1_data_exploration.py"),
-    ("2️⃣  Rashomon Set Enumeration",      "2_rashomon_set_trees.py"),
-    ("3️⃣  Feature Importance (RID)",      "3_feature_importance_rid.py"),
-    ("4️⃣  RF vs DT Comparison",           "4_rf_vs_dt_comparison.py"),
-    ("5️⃣  TimberTrek Export",             "5_timbertrek_export.py"),
+    ("1️  Data Exploration",             "1_data_exploration.py"),
+    ("2️  Rashomon Set Enumeration",      "2_rashomon_set_trees.py"),
+    ("3️  Feature Importance (RID)",      "3_feature_importance_rid.py"),
+    ("4️  RF vs DT Comparison",           "4_rf_vs_dt_comparison.py"),
+    ("5️  TimberTrek Export",             "5_timbertrek_export.py"),
 ]
 
 print("=" * 60)
@@ -32,12 +31,12 @@ for label, script in SCRIPTS:
     )
     elapsed = time.time() - t0
     if result.returncode != 0:
-        print(f"\n❌  Script failed: {script}")
+        print(f"\n Script failed: {script}")
         sys.exit(result.returncode)
     print(f"\n  ⏱  Done in {elapsed:.1f}s")
 
 print("\n" + "=" * 60)
-print("  ✅  ALL SCRIPTS COMPLETE")
+print("  ALL SCRIPTS COMPLETE")
 print("  Open outputs/ to view all figures and JSON exports.")
 print("  Open dashboard.html in your browser for the demo.")
 print("=" * 60)

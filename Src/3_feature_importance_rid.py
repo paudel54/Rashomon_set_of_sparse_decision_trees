@@ -166,7 +166,7 @@ plt.setp(cbar.ax.yaxis.get_ticklabels(), color="#8B8FA8")
 
 ax.set_xlabel("Mean Importance (across Rashomon set)", fontsize=11)
 ax.set_ylabel("Instability (CV – lower is more stable)", fontsize=11)
-ax.set_title("Feature Stability in the Rashomon Set\n(colour = marginal accuracy impact)",
+ax.set_title("Feature Stability in the Rashomon Set\n(Marginal accuracy impact)",
              fontsize=13, fontweight="bold", color="#E0E1EF")
 ax.grid(True)
 plt.tight_layout()
@@ -206,4 +206,4 @@ plt.savefig(FIG_DIR / "rid_feature_frequency.png", dpi=150,
 plt.close()
 print("✓ Saved rid_feature_frequency.png")
 
-print("\n✅  RID analysis complete.")
+print("\n  RID analysis complete.")
