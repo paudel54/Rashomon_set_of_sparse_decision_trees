@@ -23,9 +23,9 @@ In this project, we analyze physiological data for a participant (P19_S1) to cla
 ## Quick Start
 
 ### 1. Prerequisites
-Ensure you have Python 3.9+ installed and the required scientific packages:
+Ensure you have Python 3.9+ installed and install the required dependencies:
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn
+pip install -r requirements.txt
 ```
 
 ### 2. Run the Full Pipeline
