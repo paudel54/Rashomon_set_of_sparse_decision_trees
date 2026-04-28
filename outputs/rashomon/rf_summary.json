@@ -1,17 +1,37 @@
 {
-  "reference_rf_accuracy": 1.0,
+  "method_note": "RF reference found via 5-fold CV grid search on training fold (FIXED from hardcoded max_depth=None). RF grid seeds=50, matching DT script.",
+  "reference_rf_params": {
+    "n_estimators": 50,
+    "max_depth": 2,
+    "min_samples_leaf": 5,
+    "max_features": null
+  },
+  "reference_rf_cv_score": 1.0,
+  "reference_rf_accuracy": 0.995,
   "epsilon": 0.05,
-  "rf_rashomon_threshold": 0.95,
-  "rf_rashomon_set_size": 1620,
+  "rf_rashomon_threshold": 0.945,
+  "rf_total_configs_tried": 6750,
+  "rf_rashomon_set_size": 6750,
+  "dt_total_configs_tried": 4500,
   "dt_rashomon_set_size": 4171,
   "rf_accuracy_range": {
-    "min": 0.975,
+    "min": 0.97,
     "max": 1.0,
-    "mean": 0.9920833333333333
+    "mean": 0.9848859259259259
   },
   "dt_accuracy_range": {
     "min": 0.945,
     "max": 1.0,
     "mean": 0.9800287700791178
+  },
+  "rf_feature_frequency_pct": {
+    "median": 95.08,
+    "median_hr": 81.48,
+    "rmssd": 85.27,
+    "mean_tonic_eda": 100.0,
+    "mean_phasic_eda": 87.69,
+    "std_eda": 82.99,
+    "mean_temperature": 100.0,
+    "min_temperature": 99.96
   }
 }

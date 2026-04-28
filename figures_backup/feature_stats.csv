@@ -1,0 +1,5 @@
+,median,median,median_hr,median_hr,rmssd,rmssd,mean_tonic_eda,mean_tonic_eda,mean_phasic_eda,mean_phasic_eda,std_eda,std_eda,mean_temperature,mean_temperature,min_temperature,min_temperature
+,mean,std,mean,std,mean,std,mean,std,mean,std,mean,std,mean,std,mean,std
+medication,,,,,,,,,,,,,,,,
+0,0.0016,0.0029,87.3854,6.3928,0.0261,0.0361,28.6726,2.0565,0.9072,0.6753,0.4792,0.3633,32.0086,0.2018,31.9966,0.1996
+1,-0.0037,0.001,72.0584,6.5468,0.0362,0.0156,14.2745,3.4114,0.1197,0.2461,0.068,0.1645,31.7983,0.8775,31.7895,0.8804
